@@ -7,6 +7,8 @@ import {
   useRouteMatch,
 } from "react-router-dom";
 
+import { useField } from "./hooks";
+
 const Menu = () => {
   const padding = {
     paddingRight: 5,
@@ -92,53 +94,57 @@ const Footer = () => (
 );
 
 const CreateNew = (props) => {
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
-  const [info, setInfo] = useState("");
+  const content = useField('text')
+  const author = useField('text')
+  const info = useField('text')
 
   const history = useHistory();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     props.addNew({
-      content,
-      author,
-      info,
+      content: content.value,
+      author: author.value,
+      info: info.value,
       votes: 0,
     });
-    props.shownNoti(`a new anecdote ${content} created!`)
+    props.shownNoti(`a new anecdote ${content.value} created!`)
     history.push("/");
   };
+
+  const handleReset = (e) => {
+    e.preventDefault()
+    e.target.content.value = ''
+    e.target.author.value = ''
+    e.target.info.value = ''
+  }
 
   return (
     <div>
       <h2>create a new anecdote</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} onReset={handleReset}>
         <div>
           content
           <input
             name="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
+            {...content}
           />
         </div>
         <div>
           author
           <input
             name="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
+            {...author}
           />
         </div>
         <div>
           url for more info
           <input
             name="info"
-            value={info}
-            onChange={(e) => setInfo(e.target.value)}
+            {...info}
           />
         </div>
-        <button>create</button>
+        <button type="submit">create</button> <button  type="reset">reset</button>
       </form>
     </div>
   );
@@ -175,7 +181,7 @@ const App = () => {
   const anecdote = match
     ? anecdotes.find((a) => {
         console.log("a", a, "id", match.params.id);
-        return a.id == Number(match.params.id);
+        return a.id === match.params.id;
       })
     : null;
 
@@ -192,7 +198,7 @@ const App = () => {
     setNotification(message);
     setTimeout(() => {
       setNotification("");
-    }, 1000);
+    }, 10000);
   };
 
   const vote = (id) => {
